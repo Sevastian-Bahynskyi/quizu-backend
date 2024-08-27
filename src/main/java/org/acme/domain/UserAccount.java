@@ -11,6 +11,8 @@ public class UserAccount implements Serializable {
     private String email; // TODO: lookup whether quarkus has the email validator
     private String password;
 
+    public UserAccount() {}
+
     public UserAccount(String username, String email, String password) {
         this.username = username;
         this.email = email;
