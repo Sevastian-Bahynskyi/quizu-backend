@@ -9,6 +9,8 @@ import org.acme.services.persistence.UserAccountPersistenceService;
 import org.bson.Document;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
+import static javax.management.Query.eq;
+
 @ApplicationScoped
 public class UserAccountMongoDBService implements UserAccountPersistenceService {
     @Inject
@@ -16,7 +18,11 @@ public class UserAccountMongoDBService implements UserAccountPersistenceService 
 
     @Override
     public UserAccount getUserAccount(String email) {
-        throw new NotImplementedYet();
+        Document query = new Document("email", email);
+        var json = getCollection().find(query)
+                .first().toJson();
+
+        return UserAccount.fromJson(json);
     }
 
     @Override

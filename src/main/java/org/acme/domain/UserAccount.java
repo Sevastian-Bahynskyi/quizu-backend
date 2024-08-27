@@ -1,6 +1,12 @@
 package org.acme.domain;
 
-public class UserAccount {
+import com.google.gson.Gson;
+
+import java.io.Serializable;
+
+public class UserAccount implements Serializable {
+    private static Gson gson = new Gson();
+
     private String username;
     private String email; // TODO: lookup whether quarkus has the email validator
     private String password;
@@ -38,5 +44,13 @@ public class UserAccount {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public static String toJson(UserAccount userAccount) {
+        return gson.toJson(userAccount);
+    }
+
+    public static UserAccount fromJson(String json) {
+        return gson.fromJson(json, UserAccount.class);
     }
 }
