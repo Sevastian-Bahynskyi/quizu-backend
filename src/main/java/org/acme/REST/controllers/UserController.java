@@ -1,17 +1,28 @@
 package org.acme.REST.controllers;
 
 
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import org.acme.domain.exceptions.RequiredPropertiesMissingException;
+import org.acme.domain.exceptions.UserAlreadyExistsException;
+import org.acme.domain.exceptions.UserNotFoundException;
+import org.acme.domain.exceptions.WrongPasswordException;
 import org.acme.domain.requests.LoginRequest;
 import org.acme.domain.models.UserAccount;
 import org.acme.domain.requests.UserAccountUpdateRequest;
 import org.acme.services.logic.UserAccountLogicService;
+import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
+
+import java.net.URI;
+import java.util.Set;
 
 @Path("/user")
 public class UserController {
@@ -22,50 +33,50 @@ public class UserController {
 
     @POST
     @Path("/register")
-    public RestResponse<String> registerUser(UserAccount user) {
+    public Response registerUser(UserAccount user) {
 
         try {
             logicService.registerUserAccount(user);
-        } catch (Exception e) {
-            return ResponseBuilder
-                    .create(RestResponse.Status.BAD_REQUEST, e.getMessage())
+            return Response
+                    .created(URI.create("/user/register/" + user.getEmail()))
                     .build();
+        } catch (UserAlreadyExistsException e) {
+            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
+        } catch (RequiredPropertiesMissingException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
-
-        return ResponseBuilder
-                .ok("User is registered.") // TODO: implement real JWT token
-                .build();
     }
 
+    @Authenticated
     @PATCH
-    public RestResponse<String> updateUser(UserAccountUpdateRequest userAccountUpdateRequest) {
-        // TODO: update user only when logged and retrieve current email from the JWT
+    public Response updateUser(UserAccountUpdateRequest userAccountUpdateRequest) {
         try {
-//            logicService.updateUserAccount(userAccountUpdateRequest);
-        } catch (Exception e) {
-            return ResponseBuilder
-                    .create(RestResponse.Status.BAD_REQUEST, e.getMessage())
-                    .build();
-        }
+            String email = jwt.getClaim(Claims.sub.name());
+            String newToken = logicService.updateUserAccount(email, userAccountUpdateRequest);
 
-        return ResponseBuilder
-                .ok("The account info was updated.") // TODO: implement real JWT token
-                .build();
+            return Response
+                    .ok(newToken)
+                    .build();
+        } catch (UserNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (WrongPasswordException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        }
     }
 
     @POST
     @Path("/login")
-    public RestResponse<String> login(LoginRequest userLoginData) {
+    public Response login(LoginRequest userLoginData) {
         try {
             String token = logicService.login(userLoginData.getEmail(), userLoginData.getPassword());
 
-            return ResponseBuilder
+            return Response
                     .ok(token)
                     .build();
-        } catch (Exception e) {
-            return ResponseBuilder
-                    .create(RestResponse.Status.UNAUTHORIZED, e.getLocalizedMessage())
-                    .build();
+        } catch (UserNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (WrongPasswordException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
     }
 }

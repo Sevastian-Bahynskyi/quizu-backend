@@ -3,6 +3,10 @@ package org.acme.services.logic.impl;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.acme.domain.exceptions.RequiredPropertiesMissingException;
+import org.acme.domain.exceptions.UserAlreadyExistsException;
+import org.acme.domain.exceptions.UserNotFoundException;
+import org.acme.domain.exceptions.WrongPasswordException;
 import org.acme.domain.models.UserAccount;
 import org.acme.domain.requests.UserAccountUpdateRequest;
 import org.acme.services.logic.UserAccountLogicService;
@@ -22,68 +26,59 @@ public class UserAccountAccountLogicServiceImpl implements UserAccountLogicServi
     @Inject
     UserAccountSecurityService securityService;
 
-    // TODO: look into the appropriate exceptions
     @Override
-    public void registerUserAccount(UserAccount user) throws Exception {
-        if (persistenceService.getUserAccount(user.getEmail()) != null) {
-            throw new Exception("User account already exists");
+    public void registerUserAccount(UserAccount user) throws UserAlreadyExistsException, RequiredPropertiesMissingException {
+
+        if (user.getEmail() == null || user.getPassword() == null) {
+            throw new RequiredPropertiesMissingException("Email and password properties are required!");
         }
 
-        try {
-            user.setPassword(securityService.hashPassword(user.getPassword()));
-        } catch (Exception e) {
-            throw new SecurityException("Something went wrong, probably the password is incorrect.");
+        if (persistenceService.userExists(user.getEmail())) {
+            throw new UserAlreadyExistsException();
         }
-        persistenceService.createUserAccount(user); // TODO: add error handling
+
+        user.setPassword(securityService.hashPassword(user.getPassword()));
+        persistenceService.createUserAccount(user);
     }
 
     @Override
-    public String login(String email, String password) throws Exception {
-        String hashedPassword = persistenceService.getUserAccount(email).getPassword();
+    public String login(String email, String password) throws UserNotFoundException, WrongPasswordException {
+        UserAccount userAccount = persistenceService.getUserAccount(email);
+        String hashedPassword = userAccount.getPassword();
 
-        if (!securityService.passwordMatches(password, hashedPassword)) {
-            throw new SecurityException("The entered password is incorrect.");
+        if(!securityService.passwordMatches(password, hashedPassword)) {
+            throw new WrongPasswordException();
         }
 
         Set<String> groups = new HashSet<>();
         groups.add("User");
         groups.add("Quiz Owner");
 
-        return Jwt
-                .upn("author")
-                .groups(groups)
-                .expiresAt(System.currentTimeMillis() + 3600 * 7) // 1 hour expiration
-                .sign();
+        return issueToken(userAccount);
     }
 
     @Override
-    public String updateUserAccount(String email, UserAccountUpdateRequest updateRequest) throws Exception {
+    public String updateUserAccount(String email, UserAccountUpdateRequest updateRequest) throws WrongPasswordException, UserNotFoundException {
         UserAccount account = persistenceService.getUserAccount(email);
-        String hashedPassword = persistenceService.getUserAccount(email).getPassword();
+        String hashedPassword = account.getPassword();
         UserAccount updatedUser = new UserAccount();
 
 
-        if (account.getEmail() != null) {
-            account.setEmail(updateRequest.getEmail());
-            updatedUser.setEmail(account.getEmail());
-        }
+        updatedUser.setEmail(updateRequest.getNewEmail() == null ? email : updateRequest.getNewEmail());
 
         if (updateRequest.getOldPassword() != null && updateRequest.getNewPassword() != null) {
-            if (!securityService.passwordMatches(updateRequest.getOldPassword(), hashedPassword)) {
-                throw new SecurityException("The entered password is incorrect.");
+            if (securityService.passwordMatches(updateRequest.getOldPassword(), hashedPassword)) {
+                throw new WrongPasswordException();
             }
 
-            account.setPassword(updateRequest.getNewPassword());
+            updatedUser.setPassword(updateRequest.getNewPassword());
+        } else {
             updatedUser.setPassword(account.getPassword());
         }
 
-        if(updateRequest.getUsername() != null) {
-            account.setUsername(updateRequest.getUsername());
-            updatedUser.setUsername(account.getUsername());
-        }
+        updatedUser.setUsername(updateRequest.getUsername() == null ? updateRequest.getUsername() : account.getUsername());
 
-
-        persistenceService.updateUserAccount(account);
+        persistenceService.updateUserAccount(email, updatedUser);
 
         return issueToken(updatedUser);
     }
@@ -98,11 +93,10 @@ public class UserAccountAccountLogicServiceImpl implements UserAccountLogicServi
         throw new NotImplementedYet();
     }
 
-    private String issueToken(UserAccount user)
-    {
+    private String issueToken(UserAccount user) {
         return Jwt.issuer("default-issuer")
-                .upn(user.getEmail())
-                .groups(new HashSet<>(Set.of("User", "Quiz Owner")))
+                .subject(user.getEmail())
+                .groups(new HashSet<>(Set.of("User")))
                 .expiresIn(Duration.ofDays(2))
                 .claim("username", user.getUsername())
                 .sign();

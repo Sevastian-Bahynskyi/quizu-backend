@@ -5,7 +5,9 @@ public class UserAccountUpdateRequest {
     private String username;
     private String oldPassword;
     private String newPassword;
-    private String email; // TODO
+    private String newEmail;
+
+    public UserAccountUpdateRequest() {}
 
     public String getUsername() {
         return username;
@@ -28,11 +30,11 @@ public class UserAccountUpdateRequest {
         return newPassword;
     }
 
-    public String getEmail() {
-        return email;
+    public String getNewEmail() {
+        return newEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setNewEmail(String newEmail) {
+        this.newEmail = newEmail;
     }
 }

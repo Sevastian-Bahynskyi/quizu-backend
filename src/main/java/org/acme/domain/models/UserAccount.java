@@ -3,9 +3,10 @@ package org.acme.domain.models;
 import com.google.gson.Gson;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 public class UserAccount implements Serializable {
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     private String username;
     private String email; // TODO: lookup whether quarkus has the email validator
@@ -46,6 +47,11 @@ public class UserAccount implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean hasUsername()
+    {
+        return username != null && !username.isEmpty();
     }
 
     public static String toJson(UserAccount userAccount) {
