@@ -1,4 +1,4 @@
-package org.acme.domain;
+package org.acme.domain.models;
 
 import com.google.gson.Gson;
 

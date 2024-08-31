@@ -4,12 +4,12 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.acme.domain.UserAccount;
+import org.acme.domain.models.UserAccount;
 import org.acme.services.persistence.UserAccountPersistenceService;
 import org.bson.Document;
 import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
-import static javax.management.Query.eq;
+import java.util.Objects;
 
 @ApplicationScoped
 public class UserAccountMongoDBService implements UserAccountPersistenceService {
@@ -17,10 +17,12 @@ public class UserAccountMongoDBService implements UserAccountPersistenceService 
     MongoClient mongoClient;
 
     @Override
-    public UserAccount getUserAccount(String email) {
+    public UserAccount getUserAccount(String email) throws Exception {
         Document query = new Document("email", email);
-        var json = getCollection().find(query)
-                .first().toJson();
+        if(getCollection().find(query).first() == null) return null;
+
+        var json = Objects.requireNonNull(getCollection().find(query)
+                .first()).toJson();
 
         return UserAccount.fromJson(json);
     }

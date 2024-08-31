@@ -3,7 +3,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import io.quarkus.elytron.security.common.BcryptUtil;
 
 @ApplicationScoped
-public class UserSecurityService {
+public class UserAccountSecurityService {
     public String hashPassword(String plainPassword) throws Exception {
         return BcryptUtil.bcryptHash(plainPassword);
     }

@@ -1,4 +1,4 @@
-package org.acme.domain;
+package org.acme.domain.requests;
 
 public class LoginRequest {
     private String email;
