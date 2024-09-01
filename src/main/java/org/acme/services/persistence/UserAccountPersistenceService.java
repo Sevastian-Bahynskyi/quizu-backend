@@ -1,12 +1,15 @@
 package org.acme.services.persistence;
 
-import org.acme.domain.UserAccount;
+import org.acme.domain.exceptions.UserNotFoundException;
+import org.acme.domain.models.UserAccount;
 
 public interface UserAccountPersistenceService {
-    UserAccount getUserAccount(String email);
+    UserAccount getUserAccount(String email) throws UserNotFoundException;
     void createUserAccount(UserAccount userAccount);
-    UserAccount updateUserAccount(UserAccount userAccount);
-    void deleteUserAccount(String email);
 
-    UserAccount updateUserAccountEmail(String oldEmail, String newEmail); // TODO: implement
+    UserAccount updateUserAccount(String email, UserAccount userAccountUpdateTo) throws UserNotFoundException;
+
+    void deleteUserAccount(String email) throws UserNotFoundException;
+
+    boolean userExists(String email);
 }

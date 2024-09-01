@@ -1,3 +1,7 @@
+#Environment
+*.env
+*.pem
+
 #Maven
 target/
 pom.xml.tag
