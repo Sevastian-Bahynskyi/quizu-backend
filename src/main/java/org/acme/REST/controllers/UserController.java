@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.acme.domain.exceptions.RequiredPropertiesMissingException;
 import org.acme.domain.exceptions.UserAlreadyExistsException;
@@ -18,11 +17,8 @@ import org.acme.domain.requests.UserAccountUpdateRequest;
 import org.acme.services.logic.UserAccountLogicService;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.jboss.resteasy.reactive.RestResponse;
-import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import java.net.URI;
-import java.util.Set;
 
 @Path("/user")
 public class UserController {
@@ -39,6 +35,7 @@ public class UserController {
             logicService.registerUserAccount(user);
             return Response
                     .created(URI.create("/user/register/" + user.getEmail()))
+                    .entity("User registered successfully with email: " + user.getEmail())
                     .build();
         } catch (UserAlreadyExistsException e) {
             return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
@@ -53,6 +50,7 @@ public class UserController {
         try {
             String email = jwt.getClaim(Claims.sub.name());
             String newToken = logicService.updateUserAccount(email, userAccountUpdateRequest);
+
 
             return Response
                     .ok(newToken)

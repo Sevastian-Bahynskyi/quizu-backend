@@ -67,11 +67,11 @@ public class UserAccountAccountLogicServiceImpl implements UserAccountLogicServi
         updatedUser.setEmail(updateRequest.getNewEmail() == null ? email : updateRequest.getNewEmail());
 
         if (updateRequest.getOldPassword() != null && updateRequest.getNewPassword() != null) {
-            if (securityService.passwordMatches(updateRequest.getOldPassword(), hashedPassword)) {
+            if (!securityService.passwordMatches(updateRequest.getOldPassword(), hashedPassword)) {
                 throw new WrongPasswordException();
             }
 
-            updatedUser.setPassword(updateRequest.getNewPassword());
+            updatedUser.setPassword(securityService.hashPassword(updateRequest.getNewPassword()));
         } else {
             updatedUser.setPassword(account.getPassword());
         }
@@ -94,11 +94,16 @@ public class UserAccountAccountLogicServiceImpl implements UserAccountLogicServi
     }
 
     private String issueToken(UserAccount user) {
-        return Jwt.issuer("default-issuer")
+        var jwtBuilder = Jwt.issuer("default-issuer")
                 .subject(user.getEmail())
                 .groups(new HashSet<>(Set.of("User")))
-                .expiresIn(Duration.ofDays(2))
-                .claim("username", user.getUsername())
-                .sign();
+                .expiresIn(Duration.ofDays(2));
+
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            jwtBuilder.claim("username", user.getUsername());
+        }
+
+        return jwtBuilder.sign();
     }
+
 }
