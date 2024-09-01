@@ -84,8 +84,8 @@ public class UserAccountAccountLogicServiceImpl implements UserAccountLogicServi
     }
 
     @Override
-    public void deleteUserAccount(UserAccount user) {
-        throw new NotImplementedYet();
+    public void deleteUserAccount(String email) throws UserNotFoundException {
+        persistenceService.deleteUserAccount(email);
     }
 
     @Override

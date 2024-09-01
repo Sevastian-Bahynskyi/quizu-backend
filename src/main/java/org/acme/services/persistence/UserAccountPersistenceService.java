@@ -9,7 +9,7 @@ public interface UserAccountPersistenceService {
 
     UserAccount updateUserAccount(String email, UserAccount userAccountUpdateTo) throws UserNotFoundException;
 
-    void deleteUserAccount(String email);
+    void deleteUserAccount(String email) throws UserNotFoundException;
 
     boolean userExists(String email);
 }

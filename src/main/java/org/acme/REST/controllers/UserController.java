@@ -3,6 +3,7 @@ package org.acme.REST.controllers;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -75,6 +76,21 @@ public class UserController {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (WrongPasswordException e) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        }
+    }
+
+    @Authenticated
+    @DELETE
+    public Response deleteUser() {
+        try {
+            String email = jwt.getClaim(Claims.sub.name());
+            logicService.deleteUserAccount(email);
+
+            return Response
+                    .ok("User deleted successfully with email: " + email)
+                    .build();
+        } catch (UserNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
 }

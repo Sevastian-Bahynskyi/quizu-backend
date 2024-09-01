@@ -48,25 +48,31 @@ public class UserAccountMongoDBService implements UserAccountPersistenceService 
     public UserAccount updateUserAccount(String currentEmail, UserAccount userAccountUpdateTo) throws UserNotFoundException {
         Document existingUser = findUserByEmail(currentEmail);
 
-        if (existingUser != null) {
-            getCollection().updateOne(
-                    Filters.eq("email", currentEmail),
-                    Updates.combine(
-                            Updates.set("email", userAccountUpdateTo.getEmail()),
-                            Updates.set("username", userAccountUpdateTo.getUsername()),
-                            Updates.set("password", userAccountUpdateTo.getPassword())
-                    )
-            );
-        } else {
+        if (existingUser == null)
             throw new UserNotFoundException();
-        }
+
+
+        getCollection().updateOne(
+                Filters.eq("email", currentEmail),
+                Updates.combine(
+                        Updates.set("email", userAccountUpdateTo.getEmail()),
+                        Updates.set("username", userAccountUpdateTo.getUsername()),
+                        Updates.set("password", userAccountUpdateTo.getPassword())
+                )
+        );
 
         return getUserAccount(userAccountUpdateTo.getEmail());
     }
 
     @Override
-    public void deleteUserAccount(String email) {
-        throw new NotImplementedYet();
+    public void deleteUserAccount(String email) throws UserNotFoundException {
+
+        Document existingUser = findUserByEmail(email);
+        if(existingUser == null) {
+            throw new UserNotFoundException("Can't delete user that doesn't exist!");
+        }
+
+        getCollection().deleteOne(existingUser);
     }
 
     @Override

@@ -13,6 +13,7 @@ public interface UserAccountLogicService {
 
     String updateUserAccount(String email, UserAccountUpdateRequest updateRequest) throws WrongPasswordException, UserNotFoundException;
 
-    void deleteUserAccount(UserAccount user);
+    void deleteUserAccount(String email) throws UserNotFoundException;
+
     void logout(String email);
 }
