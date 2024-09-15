@@ -9,28 +9,28 @@ import java.util.Set;
 
 public class Quiz implements Serializable {
     private UserAccount quizOwner;
-    private String name;
+    private String title;
     private String description;
 
     private Set<Question> questions;
 
-    public Quiz(UserAccount quizOwner, String name, String description, List<Question> questions) {
+    public Quiz(UserAccount quizOwner, String title, String description, List<Question> questions) {
         this.quizOwner = quizOwner;
-        this.name = name;
+        this.title = title;
         this.description = description;
         this.questions = new HashSet<>(questions);
     }
 
-    public Quiz(UserAccount quizOwner, String name, String description) {
+    public Quiz(UserAccount quizOwner, String title, String description) {
         this.quizOwner = quizOwner;
-        this.name = name;
+        this.title = title;
         this.description = description;
         this.questions = new HashSet<>();
     }
 
-    public Quiz(UserAccount quizOwner, String name) {
+    public Quiz(UserAccount quizOwner, String title) {
         this.quizOwner = quizOwner;
-        this.name = name;
+        this.title = title;
         this.questions = new HashSet<>();
     }
 
@@ -42,12 +42,12 @@ public class Quiz implements Serializable {
         this.quizOwner = quizOwner;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
