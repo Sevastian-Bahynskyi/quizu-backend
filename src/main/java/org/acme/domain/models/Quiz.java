@@ -8,38 +8,40 @@ import java.util.List;
 import java.util.Set;
 
 public class Quiz implements Serializable {
-    private UserAccount quizOwner;
+    private String quizOwnerEmail;
     private String title;
     private String description;
 
     private Set<Question> questions;
 
-    public Quiz(UserAccount quizOwner, String title, String description, List<Question> questions) {
-        this.quizOwner = quizOwner;
+    public Quiz() {}
+
+    public Quiz(String quizOwnerEmail, String title, String description, List<Question> questions) {
+        this.quizOwnerEmail = quizOwnerEmail;
         this.title = title;
         this.description = description;
         this.questions = new HashSet<>(questions);
     }
 
-    public Quiz(UserAccount quizOwner, String title, String description) {
-        this.quizOwner = quizOwner;
+    public Quiz(String quizOwnerEmail, String title, String description) {
+        this.quizOwnerEmail = quizOwnerEmail;
         this.title = title;
         this.description = description;
         this.questions = new HashSet<>();
     }
 
-    public Quiz(UserAccount quizOwner, String title) {
-        this.quizOwner = quizOwner;
+    public Quiz(String quizOwnerEmail, String title) {
+        this.quizOwnerEmail = quizOwnerEmail;
         this.title = title;
         this.questions = new HashSet<>();
     }
 
-    public UserAccount getQuizOwner() {
-        return quizOwner;
+    public String getQuizOwnerEmail() {
+        return quizOwnerEmail;
     }
 
-    public void setQuizOwner(UserAccount quizOwner) {
-        this.quizOwner = quizOwner;
+    public void setQuizOwnerEmail(String quizOwnerEmail) {
+        this.quizOwnerEmail = quizOwnerEmail;
     }
 
     public String getTitle() {

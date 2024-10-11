@@ -18,7 +18,7 @@ public class QuizController {
     public Response createQuiz(Quiz quiz) {
         logicService.createQuiz(quiz);
         return Response
-                .created(URI.create("/quiz" + quiz.getTitle())) // TODO: change to ID
+                .created(URI.create("/quiz/created/" + quiz.getTitle())) // TODO: change to ID
                 .entity("User successfully created a quiz: " + quiz)
                 .build();
     }

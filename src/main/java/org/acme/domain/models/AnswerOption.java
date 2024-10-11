@@ -21,11 +21,12 @@ public class AnswerOption implements Serializable {
         this.answer = answer;
     }
 
-    public boolean isCorrect() {
+    public boolean getIsCorrect() {
         return isCorrect;
     }
 
-    public void setCorrect(boolean correct) {
+    public void setIsCorrect(boolean correct) {
         isCorrect = correct;
     }
 }
+
